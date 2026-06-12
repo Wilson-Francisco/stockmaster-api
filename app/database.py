@@ -31,10 +31,10 @@ def inicializar_banco():
     cursor = conexao.cursor()
 
     try:
-        # 1. Tabela de Usarios (para autenticacao futura)
+        # 1. Tabela de Usuarios (para autenticacao futura)
         cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS usarios(
+            CREATE TABLE IF NOT EXISTS usuarios(
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL
