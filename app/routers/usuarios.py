@@ -22,7 +22,7 @@ def registrar_usuario(dados:UsuarioRegistro):
 
     try:
         # 1. Verifica se a username ja esta cadastrado
-        cursor.execute("SELECT id usuarios WHERE username = %s;", (dados.username,))
+        cursor.execute("SELECT id FROM usuarios WHERE username = %s;", (dados.username,))
         usuario_existente = cursor.fetchone()
 
         if usuario_existente:
@@ -58,4 +58,4 @@ def registrar_usuario(dados:UsuarioRegistro):
     finally:
         cursor.close()
         conexao.close()
-        
+    
