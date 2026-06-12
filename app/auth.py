@@ -3,6 +3,8 @@ import datetime
 import bcrypt
 import jwt
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
 
@@ -52,3 +54,32 @@ def criar_token_jwt(username: str) -> str:
     token_assinado = jwt.encode(payload, SECRET_KEY, algorithm = ALGORITHM)
     
     return token_assinado
+
+# Cria o leitor de cabecalho padrao de seguranca
+security = HTTPBearer()
+
+def validar_token_jwt(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    """Validar o Token JWT enviado no cabecalho de requisicao. Deselve o nome do usuario se for valido"""
+    token = credentials.credentials
+    try:
+        # Abre e decodifica o token usando a nossa chave secreta
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+
+        if username is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token invalido: Dono do token nao encontrado"
+            )
+        return username
+    
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="O seu cracha de acesso (Token JWT) expirou. Faca login novamente"
+        )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token JWT invalido ou corrimpido"
+        )
