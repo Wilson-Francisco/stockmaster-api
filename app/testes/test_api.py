@@ -12,7 +12,8 @@ def test_api_raiz_esta_online():
     assert resposta.status_code == 200
     assert resposta.json()["status"] == "online"
 
-    def test_bloqueio_cadastro_produto_sem_token():
+
+def test_bloqueio_cadastro_produto_sem_token():
         """Garante que a API bloqueia o cadastro de produtos se o token nao for enviado"""
         dados_produto = {
             "nome": "cadeira Gamer Teste",
@@ -20,7 +21,7 @@ def test_api_raiz_esta_online():
             "quantidade": 5
         }
         # Tenta enviar o produto sem cabecalho de seguranca(token)
-        resposta = client.post("produtos", json=dados_produto)
+        resposta = client.post("/produtos", json=dados_produto)
 
         # O status esperando e 401 (Nao autorizado)
         assert resposta.status_code == 401
