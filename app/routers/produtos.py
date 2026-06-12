@@ -116,4 +116,40 @@ def atualizar_produto(produto_id: int, dados_novos: ProdutoEsquema, usuario_atua
     finally:
         cursor.close()
         conexao.close()
+
+
+@router.delete("/{produto_id}", status_code=status.HTTP_200_OK)
+def deletar_produto(produto_id: int, usuario_atual: str = Depends(validar_token_jwt)):
+    """Remove permanentemente um produto do estoque pelo ID. Rota Protegida por JWT"""
+    conexao = obter_conexao()
+    cursor = conexao.cursor()
+
+    try:
+        # Execute a remocao e tente retornar o ID deletado para checar existencia
+        cursor.execute("DELETE FROM produtos WHERE id = %s RETURNING id;", (produto_id,))
+        resultado = cursor.fetchone()
+
+        # Se o resultado for nulo, significa que o ID nao existia
+        if not resultado:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Produto com o ID {produto_id} nao foi encontrado para exclusao"
+            )
         
+        conexao.commit()
+        return {
+            "id": produto_id,
+            "mensagem": f"Produto ID {produto_id} removido com sucesso por {usuario_atual}!"
+        }
+    
+    except Exception as expt:
+        conexao.rollback()
+        if isinstance(expt, HTTPException):
+            raise expt
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno ao deletar o produto no banco: {str(expt)}"
+        )
+    finally:
+        cursor.close()
+        conexao.close()
