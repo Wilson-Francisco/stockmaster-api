@@ -24,3 +24,28 @@ def obter_conexao():
     except Exception as expt:
         print(f"Erro critico: Nao foi possivel conectar ao banco: {expt}")
         raise expt
+
+def inicializar_banco():
+    """Cria as tabelas do sistema automaticamente se eles nao existirem"""
+    conexao = obter_conexao()
+    cursor = conexao.cursor()
+
+    try:
+        # 1. Tabela de Usarios (para autenticacao futura)
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS usarios(
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL
+            );
+            """
+        )
+
+    except Exception as expt:
+        conexao.rollback()
+        print(f"Erro ao inicializar o banco: {expt}")
+        raise expt
+    finally:
+        cursor.close()
+        conexao.close()
