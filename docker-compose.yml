@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Ambiente 1: O Servidor de Banco de Dados de Teste Intermediário
+  db_homologacao:
+    image: postgres:15
+    container_name: stockmaster-db-homolog
+    environment:
+      POSTGRES_USER: admin_homolog
+      POSTGRES_PASSWORD: senha_homolog_123
+      POSTGRES_DB: stockmaster_homolog
+    ports:
+      - "5599:5432" # Usa uma porta totalmente diferente (5599) para não bater com o seu Docker antigo
+    volumes:
+      - dados_homolog:/var/lib/postgresql/data
+
+  # Ambiente 2: A Nossa API StockMaster rodando direto do Dockerfile
+  api_homologacao:
+    build: .
+    container_name: stockmaster-api-homolog
+    ports:
+      - "8080:8000" # Mapeia para a porta 8080. Você acessará o sistema por ela!
+    environment:
+      - DB_HOST=db_homologacao # O Python vai buscar o banco pelo nome do serviço Docker!
+      - DB_PORT=5432           # Porta interna do container do banco
+      - DB_NAME=stockmaster_homolog
+      - DB_USER=admin_homolog
+      - DB_PASSWORD=senha_homolog_123
+      - JWT_SECRET=chave_de_teste_de_homologacao_com_mais_de_32_caracteres
+    depends_on:
+      - db_homologacao # Garante que a API só ligue DEPOIS que o banco estiver de pé
+
+volumes:
+  dados_homolog:
