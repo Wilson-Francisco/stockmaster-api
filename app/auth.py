@@ -35,3 +35,20 @@ def verificar_senha(senha_digitada: str, hash_salvo_no_banco: str) -> bool:
         return bcrypt.checkpw(senha_digitada.encode('utf-8'), hash_salvo_no_banco.encode('utf-8'))
     except Exception:
         return False
+    
+
+def criar_token_jwt(username: str) -> str:
+    """Gera um Token JWT assinado e valido por 30 minutos"""
+    # Define o tempo de expiracao (30 minutos a partir do momento atual)
+    tempo_expiracao = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+
+    # O paylood guarda os dados do cracha (sub = dono do token, exp = data de valiadade)
+    payload = {
+        "sub": username,
+        "exp": tempo_expiracao
+    }
+
+    # Gera e assina a token usando a nossa chave secreta do .env
+    token_assinado = jwt.encode(payload, SECRET_KEY, algorithm = ALGORITHM)
+    
+    return token_assinado

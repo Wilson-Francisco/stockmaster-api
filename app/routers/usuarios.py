@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from app.database import obter_conexao
-from app.auth import gerar_hash_senha
+from app.auth import gerar_hash_senha, verificar_senha, criar_token_jwt
 
 
 
