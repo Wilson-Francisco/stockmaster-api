@@ -1,10 +1,17 @@
 import os
+import datetime
 import bcrypt
+import jwt
 from dotenv import load_dotenv
+
 
 
 # Carrega as variaveis de ambiente (sera util para a chave secreta do JWT mais tarde)
 load_dotenv()
+
+# configuracoes do JWT puxadas com seguranca do .env
+SECRET_KEY = os.getenv("JWT_SECRET", "chave_padrao_caso_nao_encontre")
+ALGORITHM = "HS256" # Algoritmo padrao de mercado para assinar token
 
 
 def gerar_hash_senha(senha_pura:str) -> str:
