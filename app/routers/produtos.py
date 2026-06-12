@@ -70,4 +70,50 @@ def lista_produtos(usuario_atual: str = Depends(validar_token_jwt)):
     finally:
         cursor.close()
         conexao.close()
+
+
+@router.put("/{produto_id}", status_code=status.HTTP_200_OK)
+def atualizar_produto(produto_id: int, dados_novos: ProdutoEsquema, usuario_atual: str = Depends(validar_token_jwt)):
+    """Atualiza todos os dados de um produto existente pelo ID. Rota protegida por JWT"""
+    conexao = obter_conexao()
+    cursor = conexao.cursor()
+
+
+    try:
+        # 1. Execute a atualizacao e ja pede para retornar o ID se ele existir
+        cursor.execute(
+            """
+            UPDATE produtos
+            SET nome = %s, preco = %s, quantidade = %s
+            WHERE id = %s
+            RETURNING id
+            """,
+            (dados_novos.nome, dados_novos.preco, dados_novos.quantidade, produto_id)
+        )
+        resultado = cursor.fetchone()
+
+        # 2. Se o resultado for nulo, significa que o ID nao foi encontrado no banco
+        if not resultado:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Produto com o ID {produto_id} nao foi encontrado no estoque"
+            )
+        
+        conexao.commit()
+        return {
+            "id": produto_id,
+            "mensagem": f"Produto ID {produto_id} atualizado com sucesso por {usuario_atual}!"
+        }
+    
+    except Exception as expt:
+        conexao.rollback()
+        if isinstance(expt, HTTPException):
+            raise expt
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno ao atualizar o produto no banco {str(expt)}"
+        )
+    finally:
+        cursor.close()
+        conexao.close()
         
