@@ -59,3 +59,46 @@ def registrar_usuario(dados:UsuarioRegistro):
         cursor.close()
         conexao.close()
     
+
+
+@router.post("/login")
+def login_usuario(dados: UsuarioRegistro):
+    """Autentica o usuario e rwtorna um Tpken JWT valido"""
+    conexao = obter_conexao()
+    cursor = conexao.cursor()
+
+    try:
+        # 1. Busca o ussuario no banco de dados para capturar o hash da senha
+        cursor.execute("SELECT username, password_hash FROM usuarios WHERE username = %s;", (dados.username,))
+        usuario = cursor.fetchone()
+
+
+        # 2. Se usuario nao existir, ou a senha nao bater, barra com Erro 401 (Nao autorrizado)
+        # Usamos a mesma mensagem generica para nao dar pistas a possiveis invasores
+        if not usuario or not verificar_senha(dados.password, usuario["password_hash"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Nome de usuario ou senha incorreta"
+            )
+        
+
+        # 3. Se passou na validacao, emite o Token JWT
+        token_acesso = criar_token_jwt(usuario["username"])
+
+
+        # 4. Retorna o token no padrao de mercado
+        return {
+            "acess_token": token_acesso,
+            "token_type": "bearer"
+        }
+
+    except Exception as expt:
+        if isinstance(expt, HTTPException):
+            raise expt
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno no Servidor ao fazer login: {str(expt)}"
+        )
+    finally:
+        cursor.close()
+        conexao.close() 
