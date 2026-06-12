@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.database import inicializar_banco
-from app.database import inicializar_banco
 from app.routers.usuarios import router as usuarios_router
+from app.routers.produtos import router as produtos_router
 
 
 
@@ -13,9 +13,12 @@ app = FastAPI(
 )
 
 
-# Inclui as rotas de autenticacao de usuarios na API
+# Incluir as rotas de autenticacao de usuarios na API
 app.include_router(usuarios_router)
 
+
+# Incluir as rotas do CRUD de produtos na API
+app.include_router(produtos_router)
 
 # Evento que roda automaticamente quando a API liga
 @app.on_event("startup")
