@@ -42,6 +42,22 @@ def inicializar_banco():
             """
         )
 
+        # 2. Tabela de Produtos (nosso CRUD principal)
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS produtos(
+                id SERIAL PRIMARY KEY,
+                nome VACHAR(100) NOT NULL,
+                preco NUMERIC(10, 2) NOT NULL,
+                quantidade INTEGER NOT NULL
+            );
+            """
+        )
+
+        # Consolida as alteracoes no banco de dados
+        conexao.commit()
+        print("Banco de dados inicializado sucesso! Tabelas verificadas/criadas")
+
     except Exception as expt:
         conexao.rollback()
         print(f"Erro ao inicializar o banco: {expt}")
