@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from app.database import inicializar_banco
+from app.database import inicializar_banco
+from app.routers.usuarios import router as usuarios_router
+
 
 
 # Cria a instancia principal de API FastAPI
@@ -10,6 +13,11 @@ app = FastAPI(
 )
 
 
+# Inclui as rotas de autenticacao de usuarios na API
+app.include_router(usuarios_router)
+
+
+# Evento que roda automaticamente quando a API liga
 @app.on_event("startup")
 def startup_event():
     print("Iniciando a StockMaster API...")
