@@ -39,6 +39,7 @@ def inicializar_banco():
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL
             );
+
             """
         )
 
@@ -47,12 +48,12 @@ def inicializar_banco():
             """
             CREATE TABLE IF NOT EXISTS produtos(
                 id SERIAL PRIMARY KEY,
-                nome VACHAR(100) NOT NULL,
+                nome VARCHAR(100) NOT NULL,
                 preco NUMERIC(10, 2) NOT NULL,
                 quantidade INTEGER NOT NULL
             );
-            """
-        )
+
+            """)
 
         # Consolida as alteracoes no banco de dados
         conexao.commit()
