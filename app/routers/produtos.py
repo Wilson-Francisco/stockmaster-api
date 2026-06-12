@@ -45,3 +45,29 @@ def cadastrar_produto(produto: ProdutoEsquema, usuario_atual: str = Depends(vali
     finally:
         cursor.close()
         conexao.close()
+
+
+@router.get("", status_code=status.HTTP_200_OK)
+def lista_produtos(usuario_atual: str = Depends(validar_token_jwt)):
+    """Busca e retorna todos os produtos cadastrados no estoque. Rota Protegida por JWT"""
+    conexao = obter_conexao()
+    cursor = conexao.cursor()
+
+
+    try:
+        # Busca todos os produtos ordenados pelo ID de forma crescente
+        cursor.execute("SELECT id, nome, preco, quantidade FROM produtos ORDER BY id ASC;")
+        produtos = cursor.fetchall()
+
+        # Se o banco estiver vazio, retornamos uma lista vazia [], o que e padrao de mercado
+        return produtos
+    
+    except Exception as expt:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao buscar produtos no banco: {str(expt)}"
+        )
+    finally:
+        cursor.close()
+        conexao.close()
+        
