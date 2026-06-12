@@ -31,8 +31,8 @@ print(f"-> Token JWT emitido: {token[:40]}...[cortado]")
 try:
     dados_decodificados = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     print(f"-> Dono do Token identificado com sucesso: {dados_decodificados.get('sub')}")
-    print("\n✅ TUDO FUNCIONANDO PERFEITAMENTE!")
+    print("\n TUDO FUNCIONANDO PERFEITAMENTE!")
 except Exception as e:
-    print(f"❌ Erro ao ler o token: {e}")
+    print(f" Erro ao ler o token: {e}")
 
 print("\n==================================================")

@@ -1,4 +1,5 @@
 import os
+import time
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
@@ -9,21 +10,31 @@ load_dotenv()
 
 
 def obter_conexao():
-    """Abre e retorna uma conexao ativa com o banco de dados"""
-    try:
-        conexao = psycopg2.connect(
-            host = os.getenv("DB_HOST"),
-            port = os.getenv("DB_PORT"),
-            database = os.getenv("DB_NAME"),
-            user = os.getenv("DB_USER"),
-            password = os.getenv("DB_PASSWORD"),
-            cursor_factory = RealDictCursor # Faz o banco retornar dados como dicionarios  
-        )
+    """Abre e retorna uma conexão ativa com o PostgreSQL, com tentativas de re-conexão (Retry)."""
+    tentativas = 5
+    espera = 2  # Segundos entre as tentativas
 
-        return conexao
-    except Exception as expt:
-        print(f"Erro critico: Nao foi possivel conectar ao banco: {expt}")
-        raise expt
+    for i in range(tentativas):
+        try:
+            conexao = psycopg2.connect(
+                host=os.getenv("DB_HOST"),
+                port=os.getenv("DB_PORT"),
+                database=os.getenv("DB_NAME"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                cursor_factory=RealDictCursor,
+            )
+            return conexao
+        except Exception as expt:
+            print(
+                f"Aviso: Banco de dados ainda inicializando. Tentativa {i+1}/{tentativas} falhou. Aguardando {espera}s..."
+            )
+            if i == tentativas - 1:
+                print(
+                    f"Erro crítico: Não foi possível conectar ao PostgreSQL após {tentativas} tentativas."
+                )
+                raise expt
+            time.sleep(espera)
 
 def inicializar_banco():
     """Cria as tabelas do sistema automaticamente se eles nao existirem"""
