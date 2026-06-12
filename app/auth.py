@@ -20,4 +20,11 @@ def gerar_hash_senha(senha_pura:str) -> str:
     # Converte o resultado de volta para string de texto para salvar no banco
     return senha_criptografada.decode('utf-8')
                                         
-                                    
+
+def verificar_senha(senha_digitada: str, hash_salvo_no_banco: str) -> bool:
+    """ Verifica se a senha que o usuario digitou confere com hash salvo no banco"""
+    try:
+        # O bcryp compara a senha pura com o hash de forma segura contra ataques de tempo
+        return bcrypt.checkpw(senha_digitada.encode('utf-8'), hash_salvo_no_banco.encode('utf-8'))
+    except Exception:
+        return False
