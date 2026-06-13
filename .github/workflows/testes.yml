@@ -1,0 +1,42 @@
+name: CI - Testes Automatizados StockMaster
+
+# Diz ao GitHub quando disparar o robô
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  executar-testes:
+    # Cria uma máquina virtual limpa com o sistema Ubuntu Linux na nuvem
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Copia o código do seu repositório para dentro da máquina virtual
+    - name: Copiar código do repositório
+      uses: actions/checkout@v4
+
+    # 2. Instala o Python 3.11 na máquina virtual
+    - name: Configurar o Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    # 3. Instala as dependências listadas no nosso requirements.txt + o httpx dos testes
+    - name: Instalar dependências do sistema e do Python
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install httpx
+
+    # 4. Cria uma variável de ambiente fake para o teste não quebrar por falta de chave
+    # O TestClient do FastAPI não precisa do banco real para os dois testes que criamos!
+    - name: Executar os testes automatizados com Pytest
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: fake_db
+        DB_USER: fake_user
+        DB_PASSWORD: fake_password
+        JWT_SECRET: chave_de_teste_super_secreta_com_mais_de_32_caracteres
+      run: |
+        python -m pytest app/testes/test_api.py
