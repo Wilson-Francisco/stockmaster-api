@@ -59,27 +59,37 @@ def criar_token_jwt(username: str) -> str:
 security = HTTPBearer()
 
 def validar_token_jwt(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Validar o Token JWT enviado no cabecalho de requisicao. Deselve o nome do usuario se for valido"""
+    """Valida o Token JWT enviado no cabeçalho. Limpa prefixos automaticamente se necessário"""
     token = credentials.credentials
+    
+    # TRATAMENTO INTELIGENTE: Se o Swagger ou o cliente enviar a palavra Bearer dentro da string, limpa ela
+    if token.startswith("Bearer "):
+        token = token.replace("Bearer ", "")
+    elif token.startswith("bearer "):
+        token = token.replace("bearer ", "")
+        
+    # Remove qualquer espaço em branco acidental nas pontas do token
+    token = token.strip()
+    
     try:
-        # Abre e decodifica o token usando a nossa chave secreta
+        # Abre e decodifica o token tratado usando a nossa chave secreta
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-
+        
         if username is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token invalido: Dono do token nao encontrado"
+                detail="Token inválido: Dono do token não encontrado"
             )
         return username
-    
+        
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="O seu cracha de acesso (Token JWT) expirou. Faca login novamente"
+            detail="O seu crachá de acesso (Token JWT) expirou. Faça login novamente"
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token JWT invalido ou corrimpido"
+            detail="Token JWT inválido ou corrompido"
         )
